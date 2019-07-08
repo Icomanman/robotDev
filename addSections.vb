@@ -34,10 +34,10 @@ Sub addSections()
         Exit Sub
     Else
         Dim rob As IRobotApplication
-        Dim robLab As IRobotLabelServer
+        Dim botLabServ As IRobotLabelServer
         Dim barSec As IRobotLabel
         Dim barDat As IRobotBarSectionData
-        Dim concSec As IRobotBarSectionConcreteData
+        Dim concThk As IRobotBarSectionConcreteData
     
         Dim widthType As IRobotBarSectionConcreteDataValue
         Dim depthType As IRobotBarSectionConcreteDataValue
@@ -55,11 +55,11 @@ Sub addSections()
         dataArr = dbRange.Value
         
         Set rob = New RobotApplication
-        Set robLab = rob.Project.Structure.Labels
+        Set botLabServ = rob.Project.Structure.Labels
         
         For i = 1 To iRowCount
             secName = dataArr(i, 1)
-            Set barSec = robLab.Create(I_LT_BAR_SECTION, secName)
+            Set barSec = botLabServ.Create(I_LT_BAR_SECTION, secName)
             Set barDat = barSec.data
           
             'Setting Material Type (has to be available within the Robot Database)
@@ -68,45 +68,109 @@ Sub addSections()
             'Check if the section is a Beam or a Girder; defaults to Column section
             If InStr(1, secName, "B", vbBinaryCompare) <> 0 Then
                 Call setBeamSec(barDat, widthType, depthType)
-                Set concSec = barDat.Concrete
-                concSec.SetReduction True, 0.35, 0.35, 1 'checked/unchecked, Ix, Iy, Iz
+                Set concThk = barDat.Concrete
+                concThk.SetReduction True, 0.35, 0.35, 1 'checked/unchecked, Ix, Iy, Iz
             ElseIf InStr(1, secName, "G", vbBinaryCompare) <> 0 Then
                 Call setBeamSec(barDat, widthType, depthType)
-                Set concSec = barDat.Concrete
-                concSec.SetReduction True, 0.35, 0.35, 1 'checked/unchecked, Ix, Iy, Iz
+                Set concThk = barDat.Concrete
+                concThk.SetReduction True, 0.35, 0.35, 1 'checked/unchecked, Ix, Iy, Iz
             Else
                 Call setColSec(barDat, widthType, depthType)
-                Set concSec = barDat.Concrete
-                concSec.SetReduction True, 0.7, 0.7, 1 'checked/unchecked, Ix, Iy, Iz
+                Set concThk = barDat.Concrete
+                concThk.SetReduction True, 0.7, 0.7, 1 'checked/unchecked, Ix, Iy, Iz
             End If
             Debug.Print "Stop"
             If CStr(dataArr(i, 5)) = "Rectangular" Then 'Section Shape
-                concSec.SetValue depthType, dataArr(i, 7)
-                concSec.SetValue widthType, dataArr(i, 9)
+                concThk.SetValue depthType, dataArr(i, 7)
+                concThk.SetValue widthType, dataArr(i, 9)
             Else
                 'Assuming all circular sections are columns
                 barDat.shapeType() = I_BSST_CONCR_COL_C
                 ' Set reductions again; shape type is overidden
                 ' and it seems all other values are reset also
-                concSec.SetReduction True, 0.7, 0.7, 1
-                concSec.SetValue I_BSCDV_COL_DE, dataArr(i, 7)
+                concThk.SetReduction True, 0.7, 0.7, 1
+                concThk.SetValue I_BSCDV_COL_DE, dataArr(i, 7)
             End If
             
             barDat.CalcNonstdGeometry
-            robLab.Store barSec
+            botLabServ.Store barSec
             
-            Set concSec = Nothing
+            Set concThk = Nothing
             Set barDat = Nothing
             Set barSec = Nothing
         Next i
         
-        Set robLab = Nothing
+        Set botLabServ = Nothing
         Set rob = Nothing
     
     End If
     
 End Sub
 
+Sub addThickness()
+
+    ' Validation before proceeding to Robot
+    Dim dbRange As range
+    Call extractData(dbRange)
+    
+    If dbRange Is Nothing Then
+        Exit Sub
+    Else
+        Dim rob As IRobotApplication
+        Dim botLabServ As IRobotLabelServer
+        Dim panelThk As IRobotLabel
+        Dim panelDat As IRobotThicknessData
+        Dim panelThkData As IRobotThicknessHomoData
+    
+        'Spreadsheet Data
+        Dim dataArr() As Variant
+        Dim iColCount As Integer
+        Dim iRowCount As Integer
+        Dim i As Integer
+        Dim thkName As String
+        iColCount = dbRange.Columns.Count
+        iRowCount = dbRange.Rows.Count
+    
+        ReDim dataArr(iRowCount, iColCount)
+        dataArr = dbRange.Value
+        
+        Set rob = New RobotApplication
+        Set botLabServ = rob.Project.Structure.Labels
+        
+        For i = 1 To iRowCount
+            thkName = CStr(dataArr(i, 1)) + CStr(dataArr(i, 2)) + CStr(dataArr(i, 3))
+            Set panelThk = botLabServ.Create(I_LT_PANEL_THICKNESS, thkName)
+            Set panelDat = panelThk.data
+          
+            'Setting Material Type (has to be available within the Robot Database)
+            panelDat.MaterialName = "FC27"
+            panelDat.ThicknessType = I_TT_HOMOGENEOUS
+            Set panelThkData = panelDat.data
+            
+            'Setting thickness
+            panelThkData.ThickConst = CDbl(dataArr(i, 4))
+            
+            'Setting reductions
+            If InStr(1, dataArr(i, 1), "PT", vbBinaryCompare) <> 0 Then
+                panelThkData.SetReduction False, 1#  'checked/unchecked, overall stiffness reduction
+            ElseIf InStr(1, dataArr(i, 1), "W", vbBinaryCompare) <> 0 Then
+                panelThkData.SetReduction True, 0.7 'checked/unchecked, overall stiffness reduction
+            Else
+                panelThkData.SetReduction True, 0.25 'checked/unchecked, overall stiffness reduction
+            End If
+            botLabServ.Store panelThk
+            
+            Set panelThkDat = Nothing
+            Set panelDat = Nothing
+            Set panelThk = Nothing
+        Next i
+        
+        Set botLabServ = Nothing
+        Set rob = Nothing
+    
+    End If
+    
+End Sub
 
 Sub mano()
 
