@@ -152,7 +152,6 @@ Sub clear_output()
 
 End Sub
 
-
 Sub Summary()
     
     Dim dForcesArr(9, 4) As Double
