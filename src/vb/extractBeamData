@@ -1,3 +1,6 @@
+' Created for Autodesk Robot Structural Analysis Professional 2017
+' Reference: robotom.tlb (under Robot SDK)
+
 Option Explicit
 Option Base 1
 
