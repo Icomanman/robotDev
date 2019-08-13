@@ -1,0 +1,25 @@
+{
+  "name": "robotdev",
+  "version": "1.0.0",
+  "description": "csv processor",
+  "main": "init.js",
+  "dependencies": {
+    "csv-parser": "^2.3.0",
+    "csv-writer": "^1.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "init.test.js",
+    "start": "node init"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Icomanman/robotDev.git"
+  },
+  "author": "Enrico Miguel Dalistan(icomanman)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Icomanman/robotDev/issues"
+  },
+  "homepage": "https://github.com/Icomanman/robotDev#readme"
+}
