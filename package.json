@@ -4,6 +4,7 @@
   "description": "robot data processor",
   "main": "index.js",
   "dependencies": {
+    "csv-json-convert": "^1.0.0",
     "fast-csv": "^3.4.0",
     "txt-file-to-json": "^1.0.4"
   },
