@@ -1,4 +1,6 @@
 
+const win32 = require("win32");
+
 // main app to process values from csv file
 const alias = require("../../alias");
 
@@ -8,6 +10,7 @@ const csv = require("csv-parser");
 // const ws = fs.createWriteStream(alias.location("out.json"));
 let data = alias.location("dat.txt");
 let json_data = [];
+
 
 // fs.writeFile(alias.location("out.json"), json_data, 'utf8', function (err) {
 //     if (err) {
@@ -24,7 +27,9 @@ let pipo = rs.pipe(csv())
 
 pipo.on("data", dat => json_data.push(dat));
 pipo.on("end");
-console.log(json_data);
+// console.log(json_data);
 
 let rob_dir = "C:\\Program Files\\Autodesk\\Autodesk Robot Structural Analysis Professional 2017\\System\\Exe";
 let rob_exe = `${rob_dir}\\robot.exe`;
+
+console.log(typeof (win32));

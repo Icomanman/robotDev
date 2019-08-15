@@ -10,7 +10,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "init.test.js",
-    "start": "node ./src/js/init"
+    "start": "node ./src/app/app.js"
   },
   "repository": {
     "type": "git",
