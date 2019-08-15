@@ -1,6 +1,6 @@
 
 // main app to process values from csv file
-const alias = require("./../../alias");
+const alias = require("../../alias");
 
 const fs = require("fs");
 const csv = require("csv-parser");
@@ -25,3 +25,6 @@ let pipo = rs.pipe(csv())
 pipo.on("data", dat => json_data.push(dat));
 pipo.on("end");
 console.log(json_data);
+
+let rob_dir = "C:\\Program Files\\Autodesk\\Autodesk Robot Structural Analysis Professional 2017\\System\\Exe";
+let rob_exe = `${rob_dir}\\robot.exe`;

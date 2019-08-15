@@ -1,2 +1,2 @@
-*.tlb
+**/ref_obj
 **/node_modules
