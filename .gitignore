@@ -1,2 +1,4 @@
 **/ref_obj
 **/node_modules
+**/dat
+*.csv
