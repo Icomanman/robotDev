@@ -53,23 +53,27 @@ Sub papaya_extract()
     
     'matic selection based on this model ONLY
     Set ulsCases = str.Selections.Create(I_OT_CASE)
-    'ulsCases.AddText ("1001to1149")
-    ulsCases.AddText ("11")
+    ulsCases.AddText ("1001to1149")
+    'ulsCases.AddText ("11")
     
     Dim Res As IRobotResultQueryReturnType
     Dim RobResQueryParams As RobotResultQueryParams
     Dim RobResRowSet As RobotResultRowSet
+    Dim vecDir(2) As Double
+    vecDir(2) = 1
 
     Set RobResQueryParams = rob.CmpntFactory.Create(I_CT_RESULT_QUERY_PARAMS)
     RobResQueryParams.Selection.Set I_OT_PANEL, panSel
     RobResQueryParams.Selection.Set I_OT_CASE, ulsCases
 
     Debug.Print "Selected Panel ID(s): " & panSel.ToText
-    'RobResQueryParams.SetParam I_RPT_LAYER, I_FLT_ABSOLUTE_MAXIMUM
-    'RobResQueryParams.SetParam I_RPT_BAR_DIV_COUNT, 5
-    RobResQueryParams.SetParam I_RPT_PANEL, 10074
-    'Debug.Print RobResQueryParams.IsParamSet(I_RPT_LOAD_CASE)
-    'Debug.Print RobResQueryParams.GetParam(I_RPT_PANEL)
+    Debug.Print "Forces will be based on global vector: " _
+    & vecDir(0) & ", " & vecDir(1) & ", " & vecDir(2)
+    RobResQueryParams.SetParam I_RPT_MAX_BUFFER_SIZE, 2000000
+    RobResQueryParams.SetParam I_RPT_SMOOTHING, I_FRS_SMOOTHING_WITHIN_A_PANEL
+    RobResQueryParams.SetParam I_RPT_LAYER, I_FLT_ABSOLUTE_MAXIMUM
+    RobResQueryParams.SetParam I_RPT_DIR_X_DEFTYPE, I_OLXDDT_CARTESIAN
+    RobResQueryParams.SetParam I_RPT_DIR_X, vecDir
 
     RobResQueryParams.ResultIds.SetSize (4)
     RobResQueryParams.ResultIds.Set 1, I_FRT_DETAILED_NXX '492
@@ -89,10 +93,12 @@ Sub papaya_extract()
     ' Initialise values to 0:
     For i = 0 To 7
         For j = 1 To 4
-            xF(i, j) = 0
+            xF(i, j) = 0.01
         Next j
     Next i
-    
+
+    str.Results.Any.SetDirX I_OLXDDT_CARTESIAN, 1, 0, 0
+
     Do
         Set RobResRowSet = New RobotResultRowSet
         Res = str.Results.Query(RobResQueryParams, RobResRowSet)
@@ -104,82 +110,82 @@ Sub papaya_extract()
         End If
         
         While starter
-            NXX = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(1))
-            NYY = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(2))
-            NXY = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(3))
-            MXX = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(4))
+            NXX = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(1)) / 1000
+            NYY = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(2)) / 1000
+            NXY = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(3)) / 1000
+            MXX = RobResRowSet.CurrentRow.GetValue(RobResRowSet.ResultIds.Get(4)) / 1000
 
         ' Set proper values:
             ' NXX Min
             If xF(0, 1) > NXX Then
                 xF(0, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(0, 1) = NXX / 1000
-                xF(0, 2) = NYY / 1000
-                xF(0, 3) = NXY / 1000
-                xF(0, 4) = MXX / 1000
+                xF(0, 1) = NXX
+                xF(0, 2) = NYY
+                xF(0, 3) = NXY
+                xF(0, 4) = MXX
                 xF(0, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' NXX Max
             If xF(1, 1) < NXX Then
                 xF(1, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(1, 1) = NXX / 1000
-                xF(1, 2) = NYY / 1000
-                xF(1, 3) = NXY / 1000
-                xF(1, 4) = MXX / 1000
+                xF(1, 1) = NXX
+                xF(1, 2) = NYY
+                xF(1, 3) = NXY
+                xF(1, 4) = MXX
                 xF(1, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' NYY Min
             If xF(2, 2) > NYY Then
                 xF(2, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(2, 1) = NXX / 1000
-                xF(2, 2) = NYY / 1000
-                xF(2, 3) = NXY / 1000
-                xF(2, 4) = MXX / 1000
+                xF(2, 1) = NXX
+                xF(2, 2) = NYY
+                xF(2, 3) = NXY
+                xF(2, 4) = MXX
                 xF(2, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' NYY Max
             If xF(3, 2) < NYY Then
                 xF(3, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(3, 1) = NXX / 1000
-                xF(3, 2) = NYY / 1000
-                xF(3, 3) = NXY / 1000
-                xF(3, 4) = MXX / 1000
+                xF(3, 1) = NXX
+                xF(3, 2) = NYY
+                xF(3, 3) = NXY
+                xF(3, 4) = MXX
                 xF(3, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' NXY Min
             If xF(4, 3) > NXY Then
                 xF(4, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(4, 1) = NXX / 1000
-                xF(4, 2) = NYY / 1000
-                xF(4, 3) = NXY / 1000
-                xF(4, 4) = MXX / 1000
+                xF(4, 1) = NXX
+                xF(4, 2) = NYY
+                xF(4, 3) = NXY
+                xF(4, 4) = MXX
                 xF(4, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' NXY Max
             If xF(5, 3) < NXY Then
                 xF(5, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(5, 1) = NXX / 1000
-                xF(5, 2) = NYY / 1000
-                xF(5, 3) = NXY / 1000
-                xF(5, 4) = MXX / 1000
+                xF(5, 1) = NXX
+                xF(5, 2) = NYY
+                xF(5, 3) = NXY
+                xF(5, 4) = MXX
                 xF(5, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' MXX Min
             If xF(6, 4) > MXX Then
                 xF(6, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(6, 1) = NXX / 1000
-                xF(6, 2) = NYY / 1000
-                xF(6, 3) = NXY / 1000
-                xF(6, 4) = MXX / 1000
+                xF(6, 1) = NXX
+                xF(6, 2) = NYY
+                xF(6, 3) = NXY
+                xF(6, 4) = MXX
                 xF(6, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
             ' MXX Max
             If xF(7, 4) < MXX Then
                 xF(7, 0) = RobResRowSet.CurrentRow.GetParam(I_RPT_PANEL)
-                xF(7, 1) = NXX / 1000
-                xF(7, 2) = NYY / 1000
-                xF(7, 3) = NXY / 1000
-                xF(7, 4) = MXX / 1000
+                xF(7, 1) = NXX
+                xF(7, 2) = NYY
+                xF(7, 3) = NXY
+                xF(7, 4) = MXX
                 xF(7, 5) = RobResRowSet.CurrentRow.GetParam(I_RPT_LOAD_CASE)
             End If
         starter = RobResRowSet.MoveNext()
